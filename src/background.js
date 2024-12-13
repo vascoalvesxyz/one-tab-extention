@@ -1,13 +1,16 @@
 // Listen for when a new tab is created
 browser.tabs.onCreated.addListener(async (newTab) => {
   try {
-    // Get all open tabs
-    const tabs = await browser.tabs.query({});
+    // Wait for a short period to allow the new tab to fully open
+    setTimeout(async () => {
+      // Get all open tabs
+      const tabs = await browser.tabs.query({});
 
-    if (tabs.length > 1) {
-      // Close the newly created tab
-      await browser.tabs.remove(newTab.id);
-    }
+      // If there are multiple tabs, close the newly created one
+      if (tabs.length > 1) {
+        await browser.tabs.remove(newTab.id);
+      }
+    }, 500);  // 500ms delay, adjust as needed
   } catch (error) {
     console.error("Error while closing new tab:", error);
   }
