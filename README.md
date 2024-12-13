@@ -1,4 +1,7 @@
 # One Tab Only
 
-1. Closes existing extra tabs.
+Manifest V2 add-on for Firefox. 
+
+
+1. Closes existing tabs.
 2. Stops you from opening new ones. 

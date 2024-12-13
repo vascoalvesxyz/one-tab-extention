@@ -1,34 +1,52 @@
-// Monitor when a new tab is created
-chrome.tabs.onCreated.addListener(async (tab) => {
-  const tabs = await chrome.tabs.query({}); // Get all open tabs
-  if (tabs.length > 1) {
-    // Close the newly created tab
-    chrome.tabs.remove(tab.id);
+// Listen for when a new tab is created
+browser.tabs.onCreated.addListener(async (newTab) => {
+  try {
+    // Get all open tabs
+    const tabs = await browser.tabs.query({});
+
+    if (tabs.length > 1) {
+      // Close the newly created tab
+      await browser.tabs.remove(newTab.id);
+    }
+  } catch (error) {
+    console.error("Error while closing new tab:", error);
   }
 });
 
-// Monitor when the user switches tabs or focuses on a different tab
-chrome.tabs.onActivated.addListener(async () => {
-  const tabs = await chrome.tabs.query({}); // Get all open tabs
+// Listen for when a tab is activated (e.g., user switches to another tab)
+browser.tabs.onActivated.addListener(async () => {
+  try {
+    // Get all open tabs
+    const tabs = await browser.tabs.query({});
 
-  // Keep the active tab and close all others
-  const activeTab = tabs.find((t) => t.active);
-  tabs.forEach((t) => {
-    if (t.id !== activeTab.id) {
-      chrome.tabs.remove(t.id); // Close non-active tabs
+    // Find the active tab
+    const activeTab = tabs.find((tab) => tab.active);
+
+    // Close all other tabs except the active one
+    const tabsToClose = tabs.filter((tab) => tab.id !== activeTab.id);
+    for (const tab of tabsToClose) {
+      await browser.tabs.remove(tab.id);
     }
-  });
+  } catch (error) {
+    console.error("Error while closing other tabs:", error);
+  }
 });
 
-// Monitor when a tab is updated (e.g., reloading or changing URL)
-chrome.tabs.onUpdated.addListener(async () => {
-  const tabs = await chrome.tabs.query({}); // Get all open tabs
+// Listen for when a tab is updated (e.g., reloaded or URL changes)
+browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  try {
+    // Get all open tabs
+    const tabs = await browser.tabs.query({});
 
-  // Keep the active tab and close all others
-  const activeTab = tabs.find((t) => t.active);
-  tabs.forEach((t) => {
-    if (t.id !== activeTab.id) {
-      chrome.tabs.remove(t.id); // Close non-active tabs
+    // Find the active tab
+    const activeTab = tabs.find((t) => t.active);
+
+    // Close all other tabs except the active one
+    const tabsToClose = tabs.filter((t) => t.id !== activeTab.id);
+    for (const t of tabsToClose) {
+      await browser.tabs.remove(t.id);
     }
-  });
+  } catch (error) {
+    console.error("Error while handling tab update:", error);
+  }
 });
