@@ -1,55 +1,67 @@
-// Listen for when a new tab is created
+/* Save tab URLs to storage */
+async function saveTab(url) {
+    try {
+        /* Get the existing list of closed tabs */
+        const data = await browser.storage.local.get("closedTabs");
+        const closedTabs = data.closedTabs || [];
+
+        /* Push the new URL to the list */
+        if (!closedTabs.includes(url)) {
+            closedTabs.push(url);
+            await browser.storage.local.set({ closedTabs });
+        }
+    } catch (error) {
+        console.error("Error saving closed tab:", error);
+    }
+}
+
+/* Save and close tab */
+async function saveAndCloseTab(tab) {
+    const url = tab.url || "New Tab";
+    await saveTab(url);
+    await browser.tabs.remove(tab.id);
+}
+
+/* Closes all non-active tabs */
+async function closeAllOtherTabs() {
+    try {
+        /* Get all open tabs */
+        const tabs = await browser.tabs.query({});
+
+        /* Find the active tab */
+        const activeTab = tabs.find((tab) => tab.active);
+
+        /* Close all other tabs except the active one */
+        const tabsToClose = tabs.filter((tab) => tab.id !== activeTab.id);
+        for (const tab of tabsToClose) {
+            await saveAndCloseTab(tab);
+        }
+
+    } catch (error) {
+        console.error("Error while closing other tabs:", error);
+    }
+}
+
+/* Listener: On Tab Creation */
 browser.tabs.onCreated.addListener(async (newTab) => {
-  try {
-    // Wait for a short period to allow the new tab to fully open
-    setTimeout(async () => {
-      // Get all open tabs
-      const tabs = await browser.tabs.query({});
-
-      // If there are multiple tabs, close the newly created one
-      if (tabs.length > 1) {
-        await browser.tabs.remove(newTab.id);
-      }
-    }, 500);  // 500ms delay, adjust as needed
-  } catch (error) {
-    console.error("Error while closing new tab:", error);
-  }
+    try {
+        setTimeout(async () => {
+            const tabs = await browser.tabs.query({});
+            if (tabs.length > 1) {
+                await saveAndCloseTab(newTab);
+            }
+        }, 500);
+    } catch (error) {
+        console.error("Error while closing new tab:", error);
+    }
 });
 
-// Listen for when a tab is activated (e.g., user switches to another tab)
+/* Listener: On tab activation (e.g., user switches to another tab) */
 browser.tabs.onActivated.addListener(async () => {
-  try {
-    // Get all open tabs
-    const tabs = await browser.tabs.query({});
-
-    // Find the active tab
-    const activeTab = tabs.find((tab) => tab.active);
-
-    // Close all other tabs except the active one
-    const tabsToClose = tabs.filter((tab) => tab.id !== activeTab.id);
-    for (const tab of tabsToClose) {
-      await browser.tabs.remove(tab.id);
-    }
-  } catch (error) {
-    console.error("Error while closing other tabs:", error);
-  }
+    closeAllOtherTabs();
 });
 
-// Listen for when a tab is updated (e.g., reloaded or URL changes)
-browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  try {
-    // Get all open tabs
-    const tabs = await browser.tabs.query({});
-
-    // Find the active tab
-    const activeTab = tabs.find((t) => t.active);
-
-    // Close all other tabs except the active one
-    const tabsToClose = tabs.filter((t) => t.id !== activeTab.id);
-    for (const t of tabsToClose) {
-      await browser.tabs.remove(t.id);
-    }
-  } catch (error) {
-    console.error("Error while handling tab update:", error);
-  }
+/*  Listener: Tab is updated */
+browser.tabs.onUpdated.addListener(async () => {
+    closeAllOtherTabs();
 });
