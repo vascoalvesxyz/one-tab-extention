@@ -1,6 +1,6 @@
 # One Tab Only
 
-![Those Who Know](https://www.github.com/vascoalves.xyz/one-tab-extention/blog/master/those-who-know.gif)
+![Those Who Know](https://github.com/vascoalvesxyz/one-tab-extention/blob/master/those-who-know.gif)
 
 Manifest V2 add-on for Firefox. 
 
