@@ -12,35 +12,42 @@ async function displayClosedTabs() {
         closed_tabs.forEach((url, index) => {
             const list_item = document.createElement("li");
 
-            const link = document.createElement("a");
-            link.href = url;
-            link.textContent = formatUrl(url, 30); 
-            link.title = url; // Show the full URL on hover
-            link.target = "_blank"; // Open in a new tab
-
-            /* Add click event to remove the link after it is followed */
-            link.addEventListener("click", async (event) => {
-                // Prevent the default link behavior temporarily
-                event.preventDefault();
-
-                // Open the link after removing the tab
-                window.open(url, "_blank");
-
-                // Remove the tab from storage first
-                setTimeout(async () => {
-                    await removeTabFromList(index); 
-                }, 500);
-
-                // Refresh the list
+            /* <button> that removes link without following */
+            const btn = document.createElement("button");
+            btn.innerText = "x";
+            btn.addEventListener("click", async () => {
+                await removeTabFromList(index); 
                 displayClosedTabs(); 
             });
 
+            /* <a> element to travel back to deleted tabs */
+            const link = document.createElement("a");
+            link.href = url;
+            link.textContent = formatUrl(url, 30); 
+            link.title = url; 
+
+            link.addEventListener("click", async (event) => {
+                event.preventDefault(); 
+                
+                /* Redirect current tab because opening a new one would save the current one. */
+                await browser.tabs.update(getActiveTab().id, { url: url }); 
+                await removeTabFromList(index); 
+                displayClosedTabs(); 
+            });
+
+            list_item.appendChild(btn);
             list_item.appendChild(link);
             list_element.appendChild(list_item);
         });
     } catch (error) {
         console.error("Error displaying closed tabs:", error);
     }
+}
+
+/* Get active tab */
+async function getActiveTab() {
+    const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+    return tabs[0];
 }
 
 /* Helper function to format and truncate a URL */

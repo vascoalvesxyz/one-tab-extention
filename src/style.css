@@ -46,9 +46,9 @@ p, ul, ol {
 }
 
 ul, ol {
-    margin-left: 20px;
+    margin-left: 10px;
+    list-style-type: none;
 }
-
 
 a, button {
 	font-weight: 600;
@@ -60,6 +60,15 @@ a:hover, button:hover {
 	transition: all 0.3 ease;
     color: #bbc585;
 }
+
+button {
+    color: #ea6962;
+    background: none;
+    border: none;
+    border-radius: 10px;
+    margin-right: 10px;
+}
+
 
 /* == HEADERS == */
 h1, h2, h3, h4, h5, h6 {
