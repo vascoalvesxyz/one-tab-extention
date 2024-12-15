@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "One Tab Only",
-    "version": "1.0",
+    "version": "0.3",
     "description": "Limits the browser to a single tab at any time.",
     "permissions": ["tabs", "storage"],
     "background": {

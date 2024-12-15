@@ -1,7 +1,7 @@
 /* Fetch and display closed tabs from storage */
 async function displayClosedTabs() {
     try {
-        const data = await browser.storage.local.get("closedTabs");
+        const data = await chrome.storage.local.get("closedTabs");
         const closed_tabs = data.closedTabs || [];
         const list_element = document.getElementById("closed-tabs-list");
 
@@ -30,7 +30,8 @@ async function displayClosedTabs() {
                 event.preventDefault(); 
                 
                 /* Redirect current tab because opening a new one would save the current one. */
-                await browser.tabs.update(getActiveTab().id, { url: url }); 
+                const activeTab = await getActiveTab();
+                await chrome.tabs.update(activeTab.id, { url: url }); 
                 await removeTabFromList(index); 
                 displayClosedTabs(); 
             });
@@ -46,7 +47,7 @@ async function displayClosedTabs() {
 
 /* Get active tab */
 async function getActiveTab() {
-    const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     return tabs[0];
 }
 
@@ -65,11 +66,11 @@ function formatUrl(url, max_len) {
 /* Remove a closed tab from the list by its index */
 async function removeTabFromList(index) {
     try {
-        const data = await browser.storage.local.get("closedTabs");
+        const data = await chrome.storage.local.get("closedTabs");
         const closedTabs = data.closedTabs || [];
 
         closedTabs.splice(index, 1);
-        await browser.storage.local.set({ closedTabs });
+        await chrome.storage.local.set({ closedTabs });
     } catch (error) {
         console.error("Error removing closed tab:", error);
     }
